@@ -5,3 +5,6 @@ sirap 750 g 18.90
 vaniljsocker 100 g 27.90
 bakpulver 225 g 13.90
 kakao 400 g 46.90
+mjölk 15 dl 20.90
+jäst 50 g 3.90
+kanel 20 g 7.90

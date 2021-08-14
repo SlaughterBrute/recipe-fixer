@@ -5,3 +5,5 @@ sirap 140 1 dl
 vaniljsocker 60 1 dl
 bakpulver 100 1 dl
 kakao 40 1 dl
+mjölk 100 1 dl
+kanel 52 1 dl

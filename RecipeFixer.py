@@ -5,7 +5,11 @@ class Recipe():
     ingredient_prices = {}
 
     def __init__(self, recipe_name):
-        if recipe_name != "#CLONE#":
+        if recipe_name == "#MERGE#":
+            self.name = "Merged recipe"
+            self.batch_size = 0
+            self.ingredients = {}
+        elif recipe_name != "#CLONE#":
             self.load_ingredient_conversions()
             self.load_ingredient_prices()
             
@@ -104,7 +108,6 @@ class Recipe():
         total_cost = 0
         for ingredient in self.ingredients:
             ingredient_packages = self.ingredients[ingredient][0] / self.ingredient_prices[ingredient][0]
-            print(self.ingredients[ingredient][0] / self.ingredient_prices[ingredient][0])
             total_cost += ingredient_packages * self.ingredient_prices[ingredient][1]
         return round(total_cost,2)
  
@@ -112,19 +115,76 @@ class Recipe():
         total_cost = 0
         for ingredient in self.ingredients:
             ingredient_packages = ceil(self.ingredients[ingredient][0] / self.ingredient_prices[ingredient][0])
-            print(self.ingredients[ingredient][0] / self.ingredient_prices[ingredient][0])
             total_cost += ingredient_packages * self.ingredient_prices[ingredient][1]
         return round(total_cost,2)
 
-    def __str__(self) -> str:
-        string = f"==================================\n{self.name} {self.batch_size}\n----------------------------------\nIngredienser:\n"
+    def calculate_recipe_ingredient_packages(self):
+        ingredient_packages = {}
         for ingredient in self.ingredients:
-            string += f"{ingredient:<20} {self.ingredients[ingredient][0]:>6} {self.ingredients[ingredient][1]}\n"
-        string += f"----------------------------------\nTotal kostnad: {self.convert_recipe_to_grams().calculate_recipe_cost()} kr\n"
-        string += f"Total kostnad (hela produkter): {self.convert_recipe_to_grams().calculate_recipe_cost_whole_products    ()} kr\n"
+            ingredient_packages[ingredient] = ceil(self.ingredients[ingredient][0] / self.ingredient_prices[ingredient][0])
+
+        return ingredient_packages
+
+    def get_shopping_list(self):
+        string = f"{'-'*70}\nInköpslista:\n"
+        ingredient_packages = self.calculate_recipe_ingredient_packages()
+        for ingredient in ingredient_packages:
+            string += f"{ingredient:<20} |{round(ingredient_packages[ingredient],1):>4} st   | {int(self.ingredient_prices[ingredient][0]):>6} gram {self.ingredient_prices[ingredient][1]:>6} kr/st\n"
         return string
 
+    def __str__(self) -> str:
+        string = f"{'='*70}\n{self.name} {self.batch_size} st\n{'-'*70}\nIngredienser:\n"
+        for ingredient in self.ingredients:
+            string += f"{ingredient:<20} {int(round(self.ingredients[ingredient][0],0)) if self.ingredients[ingredient][1] == 'g' else round(self.ingredients[ingredient][0],1):>6} {self.ingredients[ingredient][1]}\n"
+        string += self.convert_recipe_to_grams().get_shopping_list()
+        string += f"{'-'*70}\nTotal kostnad: {self.convert_recipe_to_grams().calculate_recipe_cost()} kr\n"
+        string += f"Total kostnad (hela produkter): {self.convert_recipe_to_grams().calculate_recipe_cost_whole_products()} kr\n"
+        return string
+    
+    def save_recipe(self):
+        filename = f"{self.name} {self.batch_size} st" if not self.merged else "Sammanslaget recept"
+        with open(f"{filename}.txt", "w") as text_file:
+            text_file.write(self.__str__())
+
+    @classmethod
+    def merge_recipes(cls, recipe_a, recipe_b):
+        recipe_a = recipe_a.convert_recipe_to_grams()
+        recipe_b = recipe_b.convert_recipe_to_grams()
+        merged_recipe = Recipe("#MERGE#")
+        merged_recipe.name = f"Sammanslaget: {recipe_a.name} {recipe_a.batch_size} st & {recipe_b.name}"
+        merged_recipe.batch_size = recipe_b.batch_size
+        merged_recipe.merged = True
+        for ingredient in recipe_a.ingredients:
+            if ingredient not in merged_recipe.ingredients:
+                merged_recipe.ingredients[ingredient] = recipe_a.ingredients[ingredient]
+        
+        for ingredient in recipe_b.ingredients:
+            if ingredient not in merged_recipe.ingredients:
+                merged_recipe.ingredients[ingredient] = recipe_b.ingredients[ingredient]
+            else:
+                merged_recipe.ingredients[ingredient] = recipe_a.ingredients[ingredient][0] + recipe_b.ingredients[ingredient][0], recipe_a.ingredients[ingredient][1]
+        return merged_recipe
 
 
-recipe = Recipe("test_recipe")
-print(recipe)
+
+
+hallongrottor = Recipe("hallongrottor")
+hallongrottor = hallongrottor.convert_recipe_to_grams().scale_recipe_size(200)
+
+kolakakor = Recipe("kolakakor")
+kolakakor = kolakakor.convert_recipe_to_grams().scale_recipe_size(200)
+# kolakakor.save_recipe()
+
+merged = Recipe.merge_recipes(hallongrottor, kolakakor)
+
+kladdmuffins = Recipe("kladdmuffins")
+kladdmuffins = kladdmuffins.convert_recipe_to_grams().scale_recipe_size(100)
+# kladdmuffins.save_recipe()
+
+merged = Recipe.merge_recipes(merged, kladdmuffins)
+
+kanelbullar = Recipe("kanelbullar")
+kanelbullar = kanelbullar.convert_recipe_to_grams().scale_recipe_size(100)
+
+merged = Recipe.merge_recipes(merged, kanelbullar)
+merged.save_recipe()
