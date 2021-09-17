@@ -1,4 +1,6 @@
 from math import ceil
+from typing import Tuple
+from __future__ import annotations
 
 class Recipe():
     """
@@ -12,14 +14,9 @@ class Recipe():
     """
     ingredient_conversions = {}
     ingredient_prices = {}
-    merged = False
 
     def __init__(self, recipe_name):
-        if recipe_name == "#MERGE#":
-            self.name = "Merged recipe"
-            self.batch_size = 0
-            self.ingredients = {}
-        elif recipe_name != "#CLONE#":
+        if recipe_name != "#CLONE#":
             self.load_ingredient_conversions()
             self.load_ingredient_prices()
             
@@ -60,14 +57,14 @@ class Recipe():
                 if unit == 'tsk':
                     cls.ingredient_conversions[ingredient] = float(grams)/(float(amount)/20), float(grams)/(float(amount)/3), float(grams)/(float(amount))
 
-    def clone(self):
+    def clone(self) -> Recipe:
         clone = Recipe("#CLONE#")
         clone.name = self.name
         clone.batch_size = self.batch_size
         clone.ingredients = self.ingredients
         return clone
 
-    def load_recipe(self, recipe_name):
+    def load_recipe(self, recipe_name) -> Tuple[str, int, dict[str, int, str]]:
         """
         Loads recipe from text file.
         Recipe example:
@@ -84,7 +81,7 @@ class Recipe():
                 ingredients[ingredient] = float(amount), unit
         return name, int(batch_size), ingredients
 
-    def convert_recipe_to_grams(self):
+    def convert_recipe_to_grams(self) -> Recipe:
         """
         Returns recipe with all ingredients converted to grams.
         """
@@ -111,7 +108,7 @@ class Recipe():
         gram_recipe.ingredients = converted_ingredients
         return gram_recipe
 
-    def scale_recipe_to_single(self):
+    def scale_recipe_to_single(self) -> Recipe:
         """
         Returns a version of the recipe scaled to batch size of one.
         """
@@ -123,7 +120,7 @@ class Recipe():
 
         return scaled_recipe
 
-    def scale_recipe_size(self, target_batch_size):
+    def scale_recipe_size(self, target_batch_size) -> Recipe:
         """
         Returns a version of the recipe scaled to the given batch size.
         """
@@ -136,7 +133,7 @@ class Recipe():
         
         return scaled_recipe
 
-    def calculate_recipe_cost(self):
+    def calculate_recipe_cost(self) -> dict[str, float]:
         """
         Returns what it would cost to just the neccesary amount of ingredient packages needed for the recipe.
         """
@@ -146,8 +143,8 @@ class Recipe():
             ingredient_packages = self.ingredients[ingredient][0] / self.ingredient_prices[ingredient][0]
             total_cost += ingredient_packages * self.ingredient_prices[ingredient][1]
         return round(total_cost,2)
- 
-    def calculate_recipe_cost_whole_products(self):
+
+    def calculate_recipe_cost_whole_products(self) -> dict[str, float]:
         """
         Returns what it would cost to buy all ingredient packages needed for the recipe.
         """
@@ -157,7 +154,7 @@ class Recipe():
             total_cost += ingredient_packages * self.ingredient_prices[ingredient][1]
         return round(total_cost,2)
 
-    def calculate_recipe_ingredient_packages(self):
+    def calculate_recipe_ingredient_packages(self) -> dict[str, int]:
         """
         Returns a dictionary of how many packages of ingredients is needed for the recipe.
         """
@@ -167,7 +164,7 @@ class Recipe():
 
         return ingredient_packages
 
-    def get_shopping_list(self):
+    def get_shopping_list(self) -> str:
         """
         Returns a string with how many packages of ingredients is needed for the recipe, with package price.
         """
@@ -186,38 +183,14 @@ class Recipe():
         string += f"Total kostnad (hela produkter): {self.convert_recipe_to_grams().calculate_recipe_cost_whole_products()} kr\n"
         return string
     
-    def save_recipe(self):
+    def save_recipe(self) -> None:
         """
         Saves current recipe to a text file as "RECIPE_NAME BATCH_SIZE st.txt".
-        If recipe is a merged recipe it will save as ""Sammanslaget recept.txt".
         """
-        filename = f"{self.name} {self.batch_size} st" if not self.merged else "Sammanslaget recept"
+        filename = f"{self.name} {self.batch_size} st"
         with open(f"{filename}.txt", "w") as text_file:
             text_file.write(self.__str__())
 
-    
-    @classmethod
-    def merge_recipes(cls, recipe_a, recipe_b):
-        """
-        Takes two recipes and combines them returning a recipe containing
-        the total amount of ingridients for both recipes.
-        """
-        recipe_a = recipe_a.convert_recipe_to_grams()
-        recipe_b = recipe_b.convert_recipe_to_grams()
-        merged_recipe = Recipe("#MERGE#")
-        merged_recipe.name = f"Sammanslaget: {recipe_a.name} {recipe_a.batch_size} st & {recipe_b.name}"
-        merged_recipe.batch_size = recipe_b.batch_size
-        merged_recipe.merged = True
-        for ingredient in recipe_a.ingredients:
-            if ingredient not in merged_recipe.ingredients:
-                merged_recipe.ingredients[ingredient] = recipe_a.ingredients[ingredient]
-        
-        for ingredient in recipe_b.ingredients:
-            if ingredient not in merged_recipe.ingredients:
-                merged_recipe.ingredients[ingredient] = recipe_b.ingredients[ingredient]
-            else:
-                merged_recipe.ingredients[ingredient] = recipe_a.ingredients[ingredient][0] + recipe_b.ingredients[ingredient][0], recipe_a.ingredients[ingredient][1]
-        return merged_recipe
 
 
 
@@ -226,8 +199,3 @@ hallongrottor = Recipe("hallongrottor")
 hallongrottor = hallongrottor.convert_recipe_to_grams()
 hallongrottor = hallongrottor.scale_recipe_size(200)
 hallongrottor.save_recipe()
-
-# Merged recipes, saved as "Sammanslaget recept.txt"
-kolakakor = Recipe("kolakakor")
-kolakakor = kolakakor.convert_recipe_to_grams()
-Recipe.merge_recipes(hallongrottor, kolakakor).save_recipe()

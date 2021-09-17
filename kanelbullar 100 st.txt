@@ -1,0 +1,21 @@
+======================================================================
+kanelbullar 100 st
+----------------------------------------------------------------------
+Ingredienser:
+jäst                   250 g
+smör                   500 g
+mjölk                 1500 g
+strösocker             450 g
+vetemjöl              2400 g
+kanel                     0 g
+----------------------------------------------------------------------
+Ink�pslista:
+jäst                |   5 st   |     50 gram    3.9 kr/st
+smör                |   1 st   |    500 gram   52.9 kr/st
+mjölk               |   1 st   |   1500 gram   20.9 kr/st
+strösocker          |   1 st   |   2000 gram   19.9 kr/st
+vetemjöl            |   2 st   |   2000 gram   14.9 kr/st
+kanel                |   1 st   |     20 gram    7.9 kr/st
+----------------------------------------------------------------------
+Total kostnad: 115.86 kr
+Total kostnad (hela produkter): 150.9 kr
