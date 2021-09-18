@@ -1,6 +1,6 @@
+from __future__ import annotations
 from math import ceil
 from typing import Tuple
-from __future__ import annotations
 
 class Recipe():
     """
@@ -87,7 +87,7 @@ class Recipe():
         """
         converted_ingredients = {}
         for ingredient in self.ingredients:
-            conversion_rate = 99999999
+            conversion_rate = False
             
             if self.ingredients[ingredient][1] == 'g':
                 conversion_rate = 1
@@ -133,26 +133,25 @@ class Recipe():
         
         return scaled_recipe
 
-    def calculate_recipe_cost(self) -> dict[str, float]:
-        """
-        Returns what it would cost to just the neccesary amount of ingredient packages needed for the recipe.
-        """
-        # ingredient, amount, unit, price
+    def calculate_recipe_cost(self, exact):
         total_cost = 0
         for ingredient in self.ingredients:
-            ingredient_packages = self.ingredients[ingredient][0] / self.ingredient_prices[ingredient][0]
+            ingredient_packages = self.ingredients[ingredient][0] / self.ingredient_prices[ingredient][0] if exact == True else ceil(self.ingredients[ingredient][0] / self.ingredient_prices[ingredient][0])
             total_cost += ingredient_packages * self.ingredient_prices[ingredient][1]
         return round(total_cost,2)
 
-    def calculate_recipe_cost_whole_products(self) -> dict[str, float]:
+    def calculate_recipe_cost_exact(self) -> float:
+        """
+        Returns what it would cost to just the neccesary amount of ingredient packages needed for the recipe.
+        """
+        return self.calculate_recipe_cost(exact = True)
+
+    def calculate_recipe_cost_whole_products(self) -> float:
         """
         Returns what it would cost to buy all ingredient packages needed for the recipe.
         """
-        total_cost = 0
-        for ingredient in self.ingredients:
-            ingredient_packages = ceil(self.ingredients[ingredient][0] / self.ingredient_prices[ingredient][0])
-            total_cost += ingredient_packages * self.ingredient_prices[ingredient][1]
-        return round(total_cost,2)
+        return self.calculate_recipe_cost(exact = False)
+
 
     def calculate_recipe_ingredient_packages(self) -> dict[str, int]:
         """
@@ -179,7 +178,7 @@ class Recipe():
         for ingredient in self.ingredients:
             string += f"{ingredient:<20} {int(round(self.ingredients[ingredient][0],0)) if self.ingredients[ingredient][1] == 'g' else round(self.ingredients[ingredient][0],1):>6} {self.ingredients[ingredient][1]}\n"
         string += self.convert_recipe_to_grams().get_shopping_list()
-        string += f"{'-'*70}\nTotal kostnad: {self.convert_recipe_to_grams().calculate_recipe_cost()} kr\n"
+        string += f"{'-'*70}\nTotal kostnad: {self.convert_recipe_to_grams().calculate_recipe_cost_exact()} kr\n"
         string += f"Total kostnad (hela produkter): {self.convert_recipe_to_grams().calculate_recipe_cost_whole_products()} kr\n"
         return string
     
